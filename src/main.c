@@ -1,154 +1,242 @@
-/* Program: Tic Tac Toe
-* Author: megatr0nz, github.com/IAmAnubhavSaini
-*/
+/* Program:      Tic Tac Toe
+ * Author:       xmpf
+ * Contributors: xmpf & IAmAnubhavSaini
+ * License:      MIT
+ */
 
+
+// Libraries
 #include <stdio.h>
-typedef enum game_results GameResults;
-enum game_results{
-  GR_Viable =  1,
-  GR_O_Won =   2,
-  GR_X_Won =   4,
-  GR_Draw =    8
+
+// In-line Functions
+static inline void
+clear_buffer( FILE *fp )
+{
+    int cfp;
+    while( (cfp = fgetc(fp)) != EOF && cfp != '\n' )
+        ;
+}
+
+typedef enum gameResults GameResults;
+enum gameResults {
+    
+    GR_PLAYABLE  = 0,
+    GR_U1_Won    = 1,
+    GR_U2_Won    = 2,
+    GR_TIE       = 3,
+    
 };
 
-char board[3][3];
+// Global variables
+char array[3][3] = {
+    {' ', ' ', ' '},
+    {' ', ' ', ' '},
+    {' ', ' ', ' '}
+};
+char user1_symbol;
+char user2_symbol;
 
+// Function Prototypes
 void init_board(void);
+void setup_game(void);
 void draw_grid(void);
-void get_input_O(int *, int *);
-void get_input_X(int *, int *);
-int check_input(int, int, int);
-GameResults examine_grid(void);//return 1 if game is still viable: if game is won by O, returns 2, if by X, returns 3, if draw returns 4 : Uses GameResults 
+void getInput_U1(int *, int *);
+void getInput_U2(int *, int *);
+int checkInput(int, int, int);
+GameResults winnerExists(void);
+void displayWinner(GameResults);
 
+// Main function
 int main( int argc, char *argv[] )
 {
-  int col, row;
-  int total_chances = 9;
-  GameResults result;
-  init_board();
-  draw_grid();
-  while(((result = examine_grid()) == GR_Viable) && total_chances-- > 0){
-    if(total_chances % 2 ){
-      get_input_X(&row, &col);
-    }
-    else{
-      get_input_O(&row, &col);
-    }
-  }
-  //since game has stopped, check why?
-  switch(result){
-  case GR_O_Won :
-    printf("\nO won. Congragulations."); break;
-  case GR_X_Won:
-    printf("\nX won. Congragulations."); break;
-  case GR_Draw:
-    printf("\nGame ended at draw. Thanks for playing."); break;
-  default :
-    printf("\n Don't know why this message ran. Report Error : Invalid Game Result Case."); break;
-  }
+    // Variables of function main.
+    char reply = ' ';
+    int tail = 9; // 3x3 grid
+    int column, row;
+    GameResults results = GR_PLAYABLE;
 
+    do {
 
-  return 0;
+        init_board(); // Initialize array
+        setup_game(); // sets up user game preferences. can be called from init_board. 
+        draw_grid();  // Draw initial grid
+        
+        results = GR_PLAYABLE;
+        tail    = 9;
+
+        while( (results == GR_PLAYABLE) && tail > 0 ) {
+        
+            if( tail & 1 ) {
+                getInput_U1(&column, &row); // Get player 1 input
+            } else {
+                getInput_U2(&column, &row); // Get player 2 input
+            }
+
+            tail -= 1;
+            results = winnerExists();
+        }
+
+    displayWinner( results );
+        
+    printf("\n\nDo you want to play again? (Y/N): ");
+    scanf(" %c", &reply);
+
+    } while( (reply == 'y') || (reply == 'Y') );
+
+    return 0;
 }
-void init_board(void){
-  int i = 0, j = 0;
-  for(i = 0; i < 3; i++)
-    for(j = 0; j < 3; j++)
-      board[i][j] = ' ';
+
+// Functions
+void init_board(void)
+{
+    /*******************************
+     * Function to initialize array
+     * useful when program will ask
+     * the user if he wants to play
+     * again the tic-tac-toe game..
+     *******************************/
+    int i, j;
+    for( i = 0; i < 3; i++ )
+        for( j = 0; j < 3; j++ )
+            array[i][j] = ' ';
+}
+void setup_game(void){
+  printf("\nPlease enter 1 character symbol for user 1 and user 2 in consecutive space-less manner like @# or $^ or !* etc.");
+  user1_symbol = getchar();
+  user2_symbol = getchar();
 }
 void draw_grid(void)
 {
-  // Print out the grid
-  printf("   1   2   3    \n");
-  printf("1  %c | %c | %c \n", board[0][0], board[0][1], board[0][2]);
-  printf("  ---+---+---   \n");
-  printf("2  %c | %c | %c \n", board[1][0], board[1][1], board[1][2]);
-  printf("  ---+---+---   \n");
-  printf("3  %c | %c | %c \n", board[2][0], board[2][1], board[2][2]);
+    // Print out the grid
+    printf("   1   2   3    \n");
+    printf("1  %c | %c | %c \n", array[0][0], array[0][1], array[0][2]);
+    printf("  ---+---+---   \n");
+    printf("2  %c | %c | %c \n", array[1][0], array[1][1], array[1][2]);
+    printf("  ---+---+---   \n");
+    printf("3  %c | %c | %c \n", array[2][0], array[2][1], array[2][2]);
 
 }
 
-void get_input_O(int *row, int *col)
+void getInput_U1(int *column_p, int *row_p)
 {
-  // Get input for player 1
-  printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (O): ");
-  scanf("%d %d", row, col);
+    // Get input for player 1
+    printf("Player 1 please enter the row and column,\nwhere you wish to place your mark (%c): ", user1_symbol);
+    scanf("%d %d", column_p, row_p);
+    clear_buffer( stdin );
 
-  while( check_input((*row), (*col), 1) < 0 ) { // while movement is not permitted.
-    printf("Please select a valid row, col: ");
-    scanf("%d %d", row, col);
-  }
+    while( checkInput((*column_p), (*row_p), 1) < 0 ) { // while movement is not permitted.
+        printf("Please select a valid row, column: ");
+        scanf("%d %d", column_p, row_p);
+        clear_buffer( stdin );
+    }
 
-  draw_grid();
+    draw_grid();
 }
 
-void get_input_X(int *row, int *col)
+void getInput_U2(int *column_p, int *row_p)
 {
-  // Get input for player 2
-  printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (X): ");
-  scanf("%d %d", row, col);
+    // Get input for player 2
+    printf("Player 2 please enter the row and column,\nwhere you wish to place your mark (%c): ", user2_symbol);
+    scanf("%d %d", column_p, row_p);
+    
+    clear_buffer( stdin );
 
-  while( check_input((*row), (*col), 2) < 0 ) { // while movement is not permitted.
-    printf("Please select a valid row, col: ");
-    scanf("%d %d", row, col);
-  }
+    while( checkInput((*column_p), (*row_p), 2) < 0 ) { // while movement is not permitted.
+        printf("Please select a valid row, column: ");
+        scanf("%d %d", column_p, row_p);
+        clear_buffer( stdin );
+    }
 
-  draw_grid();
+    draw_grid();
 }
 
-int check_input(int row, int col, int playerId)
+int checkInput(int column, int row, int playerId)
 {
+    /* ERRORS:
+     *          (-1) -> Wrong boundaries.
+     *          (-2) -> Movement not allowed.
+     */
 
-  if( !((col >= 1 && col <= 3) && ( row >= 1 && row <= 3)) ) {
-    printf("Error: Wrong boundaries!\n");
-    return -1; // Wrong boundaries
-  }
+    if( !((column >= 1 && column <= 3) && ( row >= 1 && row <= 3)) ) {
+        printf("Error: Wrong boundaries!\n");
+        return -1; // Wrong boundaries
+    }
 
-  col -= 1;
-  row -= 1;
-  if(board[row][col] != 'X' && board[row][col] != 'O' ) { // Move is allowed
-    board[row][col] = (playerId == 1) ? 'O' : 'X';
-  } else {
-    printf("Error: There is already a mark there!\n");
-    return -2; // Error. There is already a mark in that position
-  }
-  return 1; // Successfull
+    column -= 1;
+    row    -= 1;
+    if( array[column][row] == ' ' ) { // Move is allowed
+        array[column][row] = (playerId == 1) ? user1_symbol : user2_symbol;
+    } else {
+        printf("Error: There is already a mark there!\n");
+        return -2; // Error. There is already a mark in that position
+    }
+    return 1; // Successfull
 }
-GameResults examine_grid(){
-  int i, j;
-  i = 0; j = 3;
-  int flag_playable = 0; //not playable = 0
-  //check rows
-  for(i =0; i < j; i++){
-    if(board[i][0] == 'O' && board[i][1] == 'O' && board[i][2] == 'O'){
-      return GR_O_Won;
-    }
-    if(board[i][0] == 'X' && board[i][1] == 'X' && board[i][2] == 'X'){
-      return GR_X_Won;
-    }
-    //check cols
-    if(board[0][i] == 'O' && board[1][i] == 'O' && board[2][i] == 'O'){
-      return GR_O_Won;
-    }
-    if(board[0][i] == 'X' && board[1][i] == 'X' && board[2][i] == 'X'){
-      return GR_X_Won;
-    }
-  }
-  //check diagonal
-  if(board[0][0] == 'O' && board[1][1] == 'O' && board[2][2] == 'O' ){
-    return GR_O_Won;
-  }
-  if(board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X' ) {
-    return GR_X_Won;
-  }
 
-  //check if game is still playable:
-  for(i = 0 ; i < 3; i++){
-    for(j = 0; j<3; j++){
-      if(board[i][j]==' '){
-        return GR_Viable;
-      }
+GameResults winnerExists(void)
+{
+    // Variables of function winnerExists.
+    int i, j;
+
+    for( i = 0; i < 3; i++ ) {
+        // Check horizontal for player 1
+        if( (array[i][0] == user1_symbol ) && (array[i][1] == user1_symbol) && (array[i][2] == user1_symbol) )
+            return GR_U1_Won;
+        // Check horizontal for player 2
+        else if( (array[i][0] == user2_symbol) && (array[i][1] == user2_symbol) && (array[i][2] == user2_symbol) )
+            return GR_U2_Won;
+            
+        // Check vertical for player 1
+        if( (array[0][i] == user1_symbol) && (array[1][i] == user1_symbol) && (array[2][i] == user1_symbol) )
+            return GR_U1_Won;
+        // Check vertical for player 2
+        else if( (array[0][i] == user2_symbol) && (array[1][i] == user2_symbol) && (array[2][i] == user2_symbol) )
+            return GR_U2_Won;
     }
-  }
-  return GR_Draw;
+
+    // Diagonal check for player 1
+    if( (array[0][0] == user1_symbol) && (array[1][1] == user1_symbol) && (array[2][2] == user1_symbol) ) {
+            return GR_U1_Won;
+    }
+    else if( (array[0][2] == user1_symbol) && (array[1][1] == user1_symbol) && (array[2][0] == user1_symbol) ) {
+            return GR_U1_Won;
+    }
+
+    // Diagonal check for player 2
+    if( (array[0][0] == user2_symbol) && (array[1][1] == user2_symbol) && (array[2][2] == user2_symbol) ) {
+        return GR_U2_Won;
+    }
+    else if( (array[0][2] == user2_symbol) && (array[1][1] == user2_symbol) && (array[2][0] == user2_symbol) ) {
+        return GR_U2_Won;
+    }
+
+    for( i = 0; i < 3; i++ ) {
+        for( j = 0; j < 3; j++ ) {
+            if( array[i][j] == ' ' )
+                return GR_PLAYABLE; // No winner yet.
+        }
+    }
+
+    // This is a tie. Nobody wins.
+    return GR_TIE;
+}
+
+void displayWinner( GameResults results )
+{
+    switch( results ) {
+        case GR_U1_Won:
+            printf("Player 1 is the winner!\n");
+            break;
+        
+        case GR_U2_Won:
+            printf("Player 2 is the winner!\n");
+            break;
+
+        case GR_TIE:
+            printf("Nobody wins!\n");
+            break;
+
+        default:
+            break;
+    }  
 }
