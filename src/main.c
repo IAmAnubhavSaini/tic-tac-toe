@@ -3,6 +3,7 @@
 */
 
 #include <stdio.h>
+
 typedef enum game_results GameResults;
 enum game_results{
   GR_Viable =  1,
@@ -14,38 +15,35 @@ enum game_results{
 char board[3][3];
 
 void init_board(void);
-void draw_grid(void);
+void draw_board(void);
 void get_input_O(int *, int *);
 void get_input_X(int *, int *);
-int check_input(int, int, int);
-GameResults examine_grid(void);//return 1 if game is still viable: if game is won by O, returns 2, if by X, returns 3, if draw returns 4 : Uses GameResults 
-
+int examine_input(int, int, int);
+GameResults examine_board(void);
+void publish_results(GameResults result);
+void clear_input_stream(FILE *stream);
 int main( int argc, char *argv[] )
 {
   int col, row;
   int total_chances = 9;
+  char play_again = 'Y';
   GameResults result;
-  init_board();
-  draw_grid();
-  while(((result = examine_grid()) == GR_Viable) && total_chances-- > 0){
-    if(total_chances % 2 ){
-      get_input_X(&row, &col);
+  do{
+    init_board();
+    draw_board();
+    while(((result = examine_board()) == GR_Viable) && total_chances-- > 0){
+      if(total_chances & 1 ){
+        get_input_X(&row, &col);
+      }
+      else{
+        get_input_O(&row, &col);
+      }
     }
-    else{
-      get_input_O(&row, &col);
-    }
-  }
-  //since game has stopped, check why?
-  switch(result){
-  case GR_O_Won :
-    printf("\nO won. Congragulations."); break;
-  case GR_X_Won:
-    printf("\nX won. Congragulations."); break;
-  case GR_Draw:
-    printf("\nGame ended at draw. Thanks for playing."); break;
-  default :
-    printf("\n Don't know why this message ran. Report Error : Invalid Game Result Case."); break;
-  }
+    //since game has stopped, check why?
+    publish_results(result);
+
+    printf("\nDo you want to play again? Y/y:> ");scanf("%c", &play_again);
+  }while(play_again=='Y' || play_again=='y');
 
 
   return 0;
@@ -56,7 +54,7 @@ void init_board(void){
     for(j = 0; j < 3; j++)
       board[i][j] = ' ';
 }
-void draw_grid(void)
+void draw_board(void)
 {
   // Print out the grid
   printf("   1   2   3    \n");
@@ -73,13 +71,14 @@ void get_input_O(int *row, int *col)
   // Get input for player 1
   printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (O): ");
   scanf("%d %d", row, col);
-
-  while( check_input((*row), (*col), 1) < 0 ) { // while movement is not permitted.
+  clear_input_stream(stdin);
+  while( examine_input((*row), (*col), 1) < 0 ) { // while movement is not permitted.
     printf("Please select a valid row, col: ");
     scanf("%d %d", row, col);
+    clear_input_stream(stdin);
   }
 
-  draw_grid();
+  draw_board();
 }
 
 void get_input_X(int *row, int *col)
@@ -87,16 +86,17 @@ void get_input_X(int *row, int *col)
   // Get input for player 2
   printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (X): ");
   scanf("%d %d", row, col);
-
-  while( check_input((*row), (*col), 2) < 0 ) { // while movement is not permitted.
+  clear_input_stream(stdin);
+  while( examine_input((*row), (*col), 2) < 0 ) { // while movement is not permitted.
     printf("Please select a valid row, col: ");
     scanf("%d %d", row, col);
+    clear_input_stream(stdin);
   }
 
-  draw_grid();
+  draw_board();
 }
 
-int check_input(int row, int col, int playerId)
+int examine_input(int row, int col, int playerId)
 {
 
   if( !((col >= 1 && col <= 3) && ( row >= 1 && row <= 3)) ) {
@@ -114,7 +114,7 @@ int check_input(int row, int col, int playerId)
   }
   return 1; // Successfull
 }
-GameResults examine_grid(){
+GameResults examine_board(){
   int i, j;
   i = 0; j = 3;
   int flag_playable = 0; //not playable = 0
@@ -151,4 +151,20 @@ GameResults examine_grid(){
     }
   }
   return GR_Draw;
+}
+void publish_results(GameResults result){
+  switch(result){
+    case GR_O_Won :
+      printf("\nO won. Congragulations."); break;
+    case GR_X_Won:
+      printf("\nX won. Congragulations."); break;
+    case GR_Draw:
+      printf("\nGame ended at draw. Thanks for playing."); break;
+    default :
+      printf("\n Don't know why this message ran. Report Error : Invalid Game Result Case."); break;
+    }
+}
+void clear_input_stream(FILE *stream){
+  int input;
+  while(( input = fgetc(stream)) != EOF && input != '\n');
 }
