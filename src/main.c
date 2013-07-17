@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 #include<stdlib.h>
+#include "sqlite3.c"
+#include "sqlite3.h"
+
 #define PLAYER_NAME_SIZE 8
 /*DATA STRUCTURES*/
 typedef enum game_results GameResults;
@@ -87,6 +90,12 @@ void setup_game(void){
   scanf("%c", &players[1]->Symbol);
   clear_input_stream(stdin);
 
+  //check if both player have same symbol, make second player choose different one
+  while(players[0]->Symbol == players[1]->Symbol){
+    printf("\nBoth players have same symbol. Player 2 choose another:> ");
+    scanf("%c", &players[1]->Symbol);
+    clear_input_stream(stdin);
+  }
 }
 void draw_board(void)
 {
