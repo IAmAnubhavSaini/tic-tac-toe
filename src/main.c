@@ -3,6 +3,8 @@
 */
 
 #include <stdio.h>
+#include<stdlib.h>
+#define PLAYER_NAME_SIZE 8
 
 typedef enum game_results GameResults;
 enum game_results{
@@ -11,16 +13,19 @@ enum game_results{
   GR_U2_Won =   4,
   GR_Draw =    8
 };
-
+typedef struct player_info Player;
+struct player_info{
+  char *Name;
+  char Symbol;
+};
 char board[3][3];
-char user1_symbol;
-char user2_symbol;
+Player *players[2];
 
 void init_board(void);
 void setup_game(void);
 void draw_board(void);
-void get_input_O(int *, int *);
-void get_input_X(int *, int *);
+void get_player1_input(int *, int *);
+void get_player2_input(int *, int *);
 int examine_input(int, int, int);
 GameResults examine_board(void);
 void publish_results(GameResults result);
@@ -37,10 +42,10 @@ int main( int argc, char *argv[] )
     draw_board();
     while(((result = examine_board()) == GR_Viable) && total_chances-- > 0){
       if(total_chances & 1 ){
-        get_input_X(&row, &col);
+        get_player2_input(&row, &col);
       }
       else{
-        get_input_O(&row, &col);
+        get_player1_input(&row, &col);
       }
     }
     //since game has stopped, check why?
@@ -59,11 +64,21 @@ void init_board(void){
       board[i][j] = ' ';
 }
 void setup_game(void){
-  printf("\nUser 1, enter your symbol:> ");
-  scanf("%c", &user1_symbol);
+  players[0] = (Player*)malloc(sizeof(Player));
+  players[0]->Name = (char*) malloc(sizeof(char)*PLAYER_NAME_SIZE);
+  players[1] = (Player*)malloc(sizeof(Player));
+  players[1]->Name = (char*) malloc(sizeof(char)*PLAYER_NAME_SIZE);
+  printf("\nPlayer 1, enter your name:> ");
+  scanf("%s", players[0]->Name);
   clear_input_stream(stdin);
-  printf("\nUser 2, enter your symbol:> ");
-  scanf("%c", &user2_symbol);
+  printf("\nPlayer 1, enter your symbol:> ");
+  scanf("%c", &players[0]->Symbol);
+  clear_input_stream(stdin);
+  printf("\nPlayer 2, enter your name:> ");
+  scanf("%s", players[1]->Name);
+  clear_input_stream(stdin);
+  printf("\nPlayer 2, enter your symbol:> ");
+  scanf("%c", &players[1]->Symbol);
   clear_input_stream(stdin);
 
 }
@@ -79,10 +94,10 @@ void draw_board(void)
 
 }
 
-void get_input_O(int *row, int *col)
+void get_player1_input(int *row, int *col)
 {
   // Get input for player 1
-  printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (%c):> ", user1_symbol);
+  printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (%c):> ", players[0]->Symbol);
   scanf("%d %d", row, col);
   clear_input_stream(stdin);
   while( examine_input((*row), (*col), 1) < 0 ) { // while movement is not permitted.
@@ -94,10 +109,10 @@ void get_input_O(int *row, int *col)
   draw_board();
 }
 
-void get_input_X(int *row, int *col)
+void get_player2_input(int *row, int *col)
 {
   // Get input for player 2
-  printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (%c):> ", user2_symbol);
+  printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (%c):> ", players[1]->Symbol);
   scanf("%d %d", row, col);
   clear_input_stream(stdin);
   while( examine_input((*row), (*col), 2) < 0 ) { // while movement is not permitted.
@@ -125,8 +140,8 @@ int examine_input(int row, int col, int playerId)
 
   col -= 1;
   row -= 1;
-  if(board[row][col] != user2_symbol && board[row][col] != user1_symbol ) { // Move is allowed
-    board[row][col] = (playerId == 1) ? user1_symbol : user2_symbol;
+  if(board[row][col] != players[1]->Symbol && board[row][col] != players[0]->Symbol ) { // Move is allowed
+    board[row][col] = (playerId == 1) ? players[0]->Symbol : players[1]->Symbol;
   } else {
     printf("Error: There is already a mark there!\n");
     return -2; // error: position already filled
@@ -139,25 +154,25 @@ GameResults examine_board(){
   int flag_playable = 0; //not playable = 0
   //check rows
   for(i =0; i < j; i++){
-    if(board[i][0] == user1_symbol && board[i][1] == user1_symbol && board[i][2] == user1_symbol){
+    if(board[i][0] == players[0]->Symbol && board[i][1] == players[0]->Symbol && board[i][2] == players[0]->Symbol){
       return GR_U1_Won;
     }
-    if(board[i][0] == user2_symbol && board[i][1] == user2_symbol && board[i][2] == user2_symbol){
+    if(board[i][0] == players[1]->Symbol && board[i][1] == players[1]->Symbol && board[i][2] == players[1]->Symbol){
       return GR_U2_Won;
     }
     //check cols
-    if(board[0][i] == user1_symbol && board[1][i] == user1_symbol && board[2][i] == user1_symbol){
+    if(board[0][i] == players[0]->Symbol && board[1][i] == players[0]->Symbol && board[2][i] == players[0]->Symbol){
       return GR_U1_Won;
     }
-    if(board[0][i] == user2_symbol && board[1][i] == user2_symbol && board[2][i] == user2_symbol){
+    if(board[0][i] == players[1]->Symbol && board[1][i] == players[1]->Symbol && board[2][i] == players[1]->Symbol){
       return GR_U2_Won;
     }
   }
   //check diagonal
-  if(board[0][0] == user1_symbol && board[1][1] == user1_symbol && board[2][2] == user1_symbol ){
+  if(board[0][0] == players[0]->Symbol && board[1][1] == players[0]->Symbol && board[2][2] == players[0]->Symbol ){
     return GR_U1_Won;
   }
-  if(board[0][0] == user2_symbol && board[1][1] == user2_symbol && board[2][2] == user2_symbol ) {
+  if(board[0][0] == players[1]->Symbol && board[1][1] == players[1]->Symbol && board[2][2] == players[1]->Symbol ) {
     return GR_U2_Won;
   }
 
