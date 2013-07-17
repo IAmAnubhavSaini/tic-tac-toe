@@ -7,5 +7,5 @@ A simple tic tac toe game implemented in C.
 <p>
 Status: Working game. Primitive logic.  
 
-Version 1.2
+Version 1.2.4
 </p>

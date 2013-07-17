@@ -1,11 +1,17 @@
 /* Program: Tic Tac Toe
-* Author: megatr0nz, github.com/IAmAnubhavSaini
-*/
+ *
+ * Author: megatr0nz, github.com/IAmAnubhavSaini
+ *  
+ * External dependencies:
+ * https://github.com/IAmAnubhavSaini/randomizer-c
+ * SQLITE3
+ */
 
 #include <stdio.h>
 #include<stdlib.h>
 #include "sqlite3.c"
 #include "sqlite3.h"
+#include "random_strings.c"
 
 #define PLAYER_NAME_SIZE 8
 /*DATA STRUCTURES*/
@@ -38,7 +44,7 @@ int examine_input(int, int, int);
 GameResults examine_board(void);
 void publish_results(GameResults result);
 void clear_input_stream(FILE *stream);
-char *generate_random_id(int size);
+/* char *generate_random_id(int size); <-- moved to randomizer-c project */
 
 /*DECLARATIONS*/
 int main( int argc, char *argv[] )
@@ -229,34 +235,4 @@ void publish_results(GameResults result){
 void clear_input_stream(FILE *stream){
   int input;
   while(( input = fgetc(stream)) != EOF && input != '\n');
-}
-char *generate_random_id(int size){
-/* Read logic at
- * http://stackoverflow.com/questions/2999075/generate-a-random-number-within-range/2999130#2999130
- * OR
- * we could have used:
- * #include <time.h>
- * #include <stdlib.h>
- * srand(time(NULL));
- * int r = rand();
- * FROM
- * http://stackoverflow.com/questions/822323/how-to-generate-a-random-number-in-c
- *
- */
-  char *id = (char*)malloc(sizeof(char)*(size+1));
-  char *valid_chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
-  int i=0;
-  int limit = 63; //validchars count is 64, max index in 63 
-  int divisor = RAND_MAX/(limit+1);
-  int index = 0;
-  
-  for(i = 0; i< size; i++){
-    do{
-      index = rand()/divisor;
-    }while(index>limit);
-
-    id[i] = valid_chars[index];
-  }
-  id[i] = '\0';
-  return id;
 }
