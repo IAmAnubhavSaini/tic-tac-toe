@@ -5,5 +5,7 @@ Tic Tac Toe [C]
 A simple tic tac toe game implemented in C.
 </p>
 <p>
-Status: Not yet completed.
+Status: Working game. Primitive logic.  
+
+Version 1.0
 </p>
