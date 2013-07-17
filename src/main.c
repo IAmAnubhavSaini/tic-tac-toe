@@ -7,14 +7,17 @@
 typedef enum game_results GameResults;
 enum game_results{
   GR_Viable =  1,
-  GR_O_Won =   2,
-  GR_X_Won =   4,
+  GR_U1_Won =   2,
+  GR_U2_Won =   4,
   GR_Draw =    8
 };
 
 char board[3][3];
+char user1_symbol;
+char user2_symbol;
 
 void init_board(void);
+void setup_game(void);
 void draw_board(void);
 void get_input_O(int *, int *);
 void get_input_X(int *, int *);
@@ -30,6 +33,7 @@ int main( int argc, char *argv[] )
   GameResults result;
   do{
     init_board();
+    setup_game();
     draw_board();
     while(((result = examine_board()) == GR_Viable) && total_chances-- > 0){
       if(total_chances & 1 ){
@@ -54,6 +58,15 @@ void init_board(void){
     for(j = 0; j < 3; j++)
       board[i][j] = ' ';
 }
+void setup_game(void){
+  printf("\nUser 1, enter your symbol:> ");
+  scanf("%c", &user1_symbol);
+  clear_input_stream(stdin);
+  printf("\nUser 2, enter your symbol:> ");
+  scanf("%c", &user2_symbol);
+  clear_input_stream(stdin);
+
+}
 void draw_board(void)
 {
   // Print out the grid
@@ -69,7 +82,7 @@ void draw_board(void)
 void get_input_O(int *row, int *col)
 {
   // Get input for player 1
-  printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (O): ");
+  printf("Player 1 please enter the row and col,\nwhere you wish to place your mark (%c):> ", user1_symbol);
   scanf("%d %d", row, col);
   clear_input_stream(stdin);
   while( examine_input((*row), (*col), 1) < 0 ) { // while movement is not permitted.
@@ -84,7 +97,7 @@ void get_input_O(int *row, int *col)
 void get_input_X(int *row, int *col)
 {
   // Get input for player 2
-  printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (X): ");
+  printf("Player 2 please enter the row and col,\nwhere you wish to place your mark (%c):> ", user2_symbol);
   scanf("%d %d", row, col);
   clear_input_stream(stdin);
   while( examine_input((*row), (*col), 2) < 0 ) { // while movement is not permitted.
@@ -98,19 +111,25 @@ void get_input_X(int *row, int *col)
 
 int examine_input(int row, int col, int playerId)
 {
-
+  /* return values: 
+   * failure:-
+   * -1 : wrong boundaries
+   * -2 : position already filled
+   *
+   * success: 1
+   */
   if( !((col >= 1 && col <= 3) && ( row >= 1 && row <= 3)) ) {
     printf("Error: Wrong boundaries!\n");
-    return -1; // Wrong boundaries
+    return -1; // error: wrong boundaries
   }
 
   col -= 1;
   row -= 1;
-  if(board[row][col] != 'X' && board[row][col] != 'O' ) { // Move is allowed
-    board[row][col] = (playerId == 1) ? 'O' : 'X';
+  if(board[row][col] != user2_symbol && board[row][col] != user1_symbol ) { // Move is allowed
+    board[row][col] = (playerId == 1) ? user1_symbol : user2_symbol;
   } else {
     printf("Error: There is already a mark there!\n");
-    return -2; // Error. There is already a mark in that position
+    return -2; // error: position already filled
   }
   return 1; // Successfull
 }
@@ -120,26 +139,26 @@ GameResults examine_board(){
   int flag_playable = 0; //not playable = 0
   //check rows
   for(i =0; i < j; i++){
-    if(board[i][0] == 'O' && board[i][1] == 'O' && board[i][2] == 'O'){
-      return GR_O_Won;
+    if(board[i][0] == user1_symbol && board[i][1] == user1_symbol && board[i][2] == user1_symbol){
+      return GR_U1_Won;
     }
-    if(board[i][0] == 'X' && board[i][1] == 'X' && board[i][2] == 'X'){
-      return GR_X_Won;
+    if(board[i][0] == user2_symbol && board[i][1] == user2_symbol && board[i][2] == user2_symbol){
+      return GR_U2_Won;
     }
     //check cols
-    if(board[0][i] == 'O' && board[1][i] == 'O' && board[2][i] == 'O'){
-      return GR_O_Won;
+    if(board[0][i] == user1_symbol && board[1][i] == user1_symbol && board[2][i] == user1_symbol){
+      return GR_U1_Won;
     }
-    if(board[0][i] == 'X' && board[1][i] == 'X' && board[2][i] == 'X'){
-      return GR_X_Won;
+    if(board[0][i] == user2_symbol && board[1][i] == user2_symbol && board[2][i] == user2_symbol){
+      return GR_U2_Won;
     }
   }
   //check diagonal
-  if(board[0][0] == 'O' && board[1][1] == 'O' && board[2][2] == 'O' ){
-    return GR_O_Won;
+  if(board[0][0] == user1_symbol && board[1][1] == user1_symbol && board[2][2] == user1_symbol ){
+    return GR_U1_Won;
   }
-  if(board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X' ) {
-    return GR_X_Won;
+  if(board[0][0] == user2_symbol && board[1][1] == user2_symbol && board[2][2] == user2_symbol ) {
+    return GR_U2_Won;
   }
 
   //check if game is still playable:
@@ -154,10 +173,10 @@ GameResults examine_board(){
 }
 void publish_results(GameResults result){
   switch(result){
-    case GR_O_Won :
-      printf("\nO won. Congragulations."); break;
-    case GR_X_Won:
-      printf("\nX won. Congragulations."); break;
+    case GR_U1_Won :
+      printf("\nPlayer 1 won. Congragulations."); break;
+    case GR_U2_Won:
+      printf("\nPlayer 2 won. Congragulations."); break;
     case GR_Draw:
       printf("\nGame ended at draw. Thanks for playing."); break;
     default :
