@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include<stdlib.h>
 #define PLAYER_NAME_SIZE 8
-
+/*DATA STRUCTURES*/
 typedef enum game_results GameResults;
 enum game_results{
   GR_Viable =  1,
@@ -18,9 +18,13 @@ struct player_info{
   char *Name;
   char Symbol;
 };
+
+/* GLOBALS */
 char board[3][3];
 Player *players[2];
 
+
+/*DEFINITIONS*/
 void init_board(void);
 void setup_game(void);
 void draw_board(void);
@@ -30,6 +34,8 @@ int examine_input(int, int, int);
 GameResults examine_board(void);
 void publish_results(GameResults result);
 void clear_input_stream(FILE *stream);
+
+/*DECLARATIONS*/
 int main( int argc, char *argv[] )
 {
   int col, row;
@@ -189,11 +195,11 @@ GameResults examine_board(){
 void publish_results(GameResults result){
   switch(result){
     case GR_P1_Won :
-      printf("\nPlayer 1 won. Congragulations."); break;
+      printf("\nPlayer 1 won. Congragulations %s.", players[0]->Name); break;
     case GR_P2_Won:
-      printf("\nPlayer 2 won. Congragulations."); break;
+      printf("\nPlayer 2 won. Congragulations %s.", players[1]->Name); break;
     case GR_Draw:
-      printf("\nGame ended at draw. Thanks for playing."); break;
+      printf("\nGame ended at draw. Thanks for playing %s and %s.", players[0]->Name, players[1]->Name); break;
     default :
       printf("\n Don't know why this message ran. Report Error : Invalid Game Result Case."); break;
     }
