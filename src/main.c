@@ -9,8 +9,8 @@
 typedef enum game_results GameResults;
 enum game_results{
   GR_Viable =  1,
-  GR_U1_Won =   2,
-  GR_U2_Won =   4,
+  GR_P1_Won =   2,
+  GR_P2_Won =   4,
   GR_Draw =    8
 };
 typedef struct player_info Player;
@@ -155,25 +155,25 @@ GameResults examine_board(){
   //check rows
   for(i =0; i < j; i++){
     if(board[i][0] == players[0]->Symbol && board[i][1] == players[0]->Symbol && board[i][2] == players[0]->Symbol){
-      return GR_U1_Won;
+      return GR_P1_Won;
     }
     if(board[i][0] == players[1]->Symbol && board[i][1] == players[1]->Symbol && board[i][2] == players[1]->Symbol){
-      return GR_U2_Won;
+      return GR_P2_Won;
     }
     //check cols
     if(board[0][i] == players[0]->Symbol && board[1][i] == players[0]->Symbol && board[2][i] == players[0]->Symbol){
-      return GR_U1_Won;
+      return GR_P1_Won;
     }
     if(board[0][i] == players[1]->Symbol && board[1][i] == players[1]->Symbol && board[2][i] == players[1]->Symbol){
-      return GR_U2_Won;
+      return GR_P2_Won;
     }
   }
   //check diagonal
   if(board[0][0] == players[0]->Symbol && board[1][1] == players[0]->Symbol && board[2][2] == players[0]->Symbol ){
-    return GR_U1_Won;
+    return GR_P1_Won;
   }
   if(board[0][0] == players[1]->Symbol && board[1][1] == players[1]->Symbol && board[2][2] == players[1]->Symbol ) {
-    return GR_U2_Won;
+    return GR_P2_Won;
   }
 
   //check if game is still playable:
@@ -188,9 +188,9 @@ GameResults examine_board(){
 }
 void publish_results(GameResults result){
   switch(result){
-    case GR_U1_Won :
+    case GR_P1_Won :
       printf("\nPlayer 1 won. Congragulations."); break;
-    case GR_U2_Won:
+    case GR_P2_Won:
       printf("\nPlayer 2 won. Congragulations."); break;
     case GR_Draw:
       printf("\nGame ended at draw. Thanks for playing."); break;
