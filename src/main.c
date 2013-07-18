@@ -1,6 +1,6 @@
 /* Program: Tic Tac Toe
  *
- * Author: megatr0nz, github.com/IAmAnubhavSaini
+ * Author: github.com/IAmAnubhavSaini
  *  
  * External dependencies:
  * https://github.com/IAmAnubhavSaini/randomizer-c
@@ -14,13 +14,13 @@
 #include "random_strings.c"
 
 #define PLAYER_NAME_SIZE 8
-/*DATA STRUCTURES*/
+/* DATA STRUCTURES */
 typedef enum game_results GameResults;
 enum game_results{
-  GR_Viable =  1,
+  GR_Viable =   1,
   GR_P1_Won =   2,
   GR_P2_Won =   4,
-  GR_Draw =    8
+  GR_Draw   =   8 
 };
 typedef struct player_info Player;
 struct player_info{
@@ -32,7 +32,6 @@ struct player_info{
 /* GLOBALS */
 char board[3][3];
 Player *players[2];
-
 
 /*DEFINITIONS*/
 void init_board(void);
