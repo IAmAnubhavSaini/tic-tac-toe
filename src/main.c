@@ -9,10 +9,10 @@
 
 #include <stdio.h>
 #include<stdlib.h>
-#include "sqlite3.c"
-#include "sqlite3.h"
+//#include "sqlite3.c"
+//#include "sqlite3.h"
 #include "random_strings.c"
-
+#include "tttdbm.c"
 #define PLAYER_NAME_SIZE 8
 /* DATA STRUCTURES */
 typedef enum game_results GameResults;
