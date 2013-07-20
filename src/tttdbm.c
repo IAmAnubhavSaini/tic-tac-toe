@@ -11,7 +11,24 @@
 //#include "sqlite3.h"
 #define MAX_PLAYER_INFO_STORAGE 10
 #define MAX_PLAYER_INFO_LENGTH  50
-static FILE *database = "";//we are not going to use it yet.
+
+static FILE *database = NULL;//we are not going to use it yet.
+static bool IsConnected = false;
+
+typedef struct db Db;
+typedef enum states States;
+struct db{
+  States State;
+  char *DBName;
+  FILE *DBHandle;
+};
+enum states{
+  Disconnected = 0;
+  Connected = 1;
+};
+static Db DB;
+static States CurrentDBState = DB.State.Disconnected;
+
 void create_local_db(char *address){
   FILE *fpdb = fopen(address, "w");
   fclose(fpdb);
@@ -20,13 +37,19 @@ FILE *connect_local_db(char *address){
   FILE *fpdb = fopen(address, "a+");
   if(fpdb != NULL){
     database = fpdb;
+    DB.State = Connected;
+    DB.DBName = address;
+    DB.DBHandle = fpdb;
     return fpdb;
   }
   else
     return NULL;
 }
 void disconnect_local_db(FILE *db){
-  database = "";
+  database = "\0";
+  DB.State = Disconnected;
+  DB.DBName = "\0";
+  DB.DBHandle = NULL;
   fclose(db);
 }
 
