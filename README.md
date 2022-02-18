@@ -4,7 +4,7 @@ A simple tic-tac-toe game implemented in C.
 
 Status: Working game. Primitive logic.
 
-Version 1.2.4
+Version 2.0.0
 
 ## Sample run
 
